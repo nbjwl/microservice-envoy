@@ -1,0 +1,31 @@
+version: '3'
+services:
+
+  consul-server1:
+    image: consul:latest
+    volumes:
+    - ./consul/server/config:/consul/config
+#    - ./consul/server/data/server1:/consul/data
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -bootstrap-expect 3 -retry-join "consul-server1"
+    ports:
+    - 8500:8500
+
+  consul-server2:
+    image: consul:latest
+    volumes:
+    - ./consul/server/config:/consul/config
+#    - ./consul/server/data/server2:/consul/data
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -bootstrap-expect 3 -retry-join "consul-server1"
+
+  consul-server3:
+    image: consul:latest
+    volumes:
+    - ./consul/server/config:/consul/config
+#    - ./consul/server/data/server3:/consul/data
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -bootstrap-expect 3 -retry-join "consul-server1"
+
+
+networks:
+  default:
+    external:
+      name: service-mesh-envoy

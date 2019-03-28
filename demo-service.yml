@@ -1,0 +1,27 @@
+version: '3'
+services:
+  demo-service-envoy:
+    image: envoyproxy/envoy-alpine:latest
+    volumes:
+    - ./envoy/envoy-dynamic.yml:/etc/envoy.yaml
+    command: envoy -c /etc/envoy.yaml --service-cluster demo-service  --service-node demo1
+
+  demo-service:
+    image: openjdk:11-jre-slim
+    volumes:
+    - ./java/demo/target/demo-0.0.1-SNAPSHOT.jar:/etc/service.jar
+    command: java -jar /etc/service.jar
+    network_mode: "service:demo-service-envoy"
+
+  demo-service-consul:
+    image: consul:latest
+    volumes:
+    - ./consul/client/demo:/consul/config
+#    - ./consul/client/data/demo:/consul/data
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -retry-join "consul-server1"
+    network_mode: "service:demo-service-envoy"
+
+networks:
+  default:
+    external:
+      name: service-mesh-envoy
