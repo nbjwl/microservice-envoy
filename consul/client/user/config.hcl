@@ -4,7 +4,7 @@ ports {
   grpc = 8502
 }
 services {
-  name = "demo"
+  name = "user"
   port = 8080
   connect {
     sidecar_service {}
