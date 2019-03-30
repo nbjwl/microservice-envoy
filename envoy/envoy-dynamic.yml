@@ -2,20 +2,15 @@ static_resources:
   clusters:
   # local_agent is the "cluster" used to make further discovery requests for
   # config and should point to the gRPC port of the local Consul agent instance.
-  - name: consul_agent
+  - name: local_agent
     connect_timeout: 1s
     type: STATIC
     http2_protocol_options:
       allow_connect: true
-    load_assignment:
-      cluster_name: consul_agent
-      endpoints:
-      - lb_endpoints:
-        - endpoint:
-            address:
-              socket_address:
-                address: 127.0.0.1
-                port_value: 8502
+    hosts:
+      - socket_address:
+          address: 127.0.0.1
+          port_value: 8502
 dynamic_resources:
   lds_config:
     ads: {}
@@ -28,7 +23,7 @@ dynamic_resources:
       - key: x-consul-token
         value: ""
       envoy_grpc:
-        cluster_name: consul_agent
+        cluster_name: local_agent
 admin:
   access_log_path: "/dev/null"
   address:

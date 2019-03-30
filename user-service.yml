@@ -1,33 +1,36 @@
 version: '3'
 services:
-  user-service-envoy:
-    image: envoyproxy/envoy-alpine:latest
+  user-service-consul:
+    image: consul:latest
     volumes:
-    - ./envoy/envoy-dynamic.yml:/etc/envoy.yaml
-    command: envoy -c /etc/envoy.yaml --service-cluster user-sidecar-proxy  --service-node user-sidecar-proxy
+    - ./consul/client/user:/consul/config
+    #    - ./consul/client/data/user:/consul/data
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -retry-join "consul-server1"
     ports:
     - 9001:8081
     - 8001:21000
     - 10001:8080
+
+
+  user-service-envoy:
+    image: envoyproxy/envoy-alpine:v1.8.0
+    volumes:
+    - ./envoy/envoy-dynamic.yml:/etc/envoy.yaml
+    command: envoy -c /etc/envoy.yaml --service-cluster user-sidecar-proxy  --service-node user-sidecar-proxy
+    network_mode: "service:user-service-consul"
+    depends_on:
+      - user-service-consul
+
 
   user-service:
     image: openjdk:11-jre-slim
     volumes:
     - ./java/user/target/user-0.0.1-SNAPSHOT.jar:/etc/service.jar
     command: java -jar /etc/service.jar
-    network_mode: "service:user-service-envoy"
+    network_mode: "service:user-service-consul"
     depends_on:
-      - user-service-envoy
+      - user-service-consul
 
-  user-service-consul:
-    image: consul:latest
-    volumes:
-    - ./consul/client/user:/consul/config
-#    - ./consul/client/data/user:/consul/data
-    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -retry-join "consul-server1"
-    network_mode: "service:user-service-envoy"
-    depends_on:
-      - user-service-envoy
 
 networks:
   default:
