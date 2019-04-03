@@ -9,10 +9,11 @@ services:
     - 8001:80
 
   user-service:
-    image: openjdk:11-jre-slim
+    image: maven:3.6.0-jdk-11
     volumes:
-    - ../services/user/target/user-0.0.1-SNAPSHOT.jar:/etc/service.jar
-    command: java -jar /etc/service.jar
+    - ../services:/etc/service
+    - ~/.m2:/root/.m2
+    command: mvn -f /etc/service/user/pom.xml spring-boot:run
     network_mode: "service:user-service-envoy"
     depends_on:
     - user-service-envoy
@@ -26,10 +27,11 @@ services:
     - 8002:80
 
   demo-service:
-    image: openjdk:11-jre-slim
+    image: maven:3.6.0-jdk-11
     volumes:
-    - ../services/demo/target/demo-0.0.1-SNAPSHOT.jar:/etc/service.jar
-    command: java -jar /etc/service.jar
+    - ../services:/etc/service
+    - ~/.m2:/root/.m2
+    command: mvn -f /etc/service/demo/pom.xml spring-boot:run
     network_mode: "service:demo-service-envoy"
     depends_on:
     - demo-service-envoy

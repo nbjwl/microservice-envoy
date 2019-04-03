@@ -26,5 +26,3 @@ buildNumber.properties
 .idea
 *.iml
 out
-gen
-/envoy-consul-connect/consul/server/data/
