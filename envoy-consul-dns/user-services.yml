@@ -1,0 +1,32 @@
+version: '3'
+services:
+
+  user-service-consul:
+    image: consul:latest
+    volumes:
+    - ./user/consul.hcl:/consul/config/consul.hcl
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -retry-join "consul-server1"
+
+  user-service-envoy:
+    image: envoyproxy/envoy-alpine:latest
+    volumes:
+    - ./user/envoy.yml:/etc/envoy.yaml
+    command: envoy -c /etc/envoy.yaml --service-cluster user-sidecar-proxy  --service-node user-sidecar-proxy
+    network_mode: "service:user-service-consul"
+    depends_on:
+    - user-service-consul
+
+  user-service:
+    image: maven:3.6.0-jdk-11
+    volumes:
+    - ../services:/etc/service
+    - ~/.m2:/root/.m2
+    command: mvn -f /etc/service/user/pom.xml spring-boot:run
+    network_mode: "service:user-service-consul"
+    depends_on:
+    - user-service-consul
+
+networks:
+  default:
+    external:
+      name: envoy-consul-dns
