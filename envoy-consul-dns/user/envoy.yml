@@ -24,6 +24,12 @@ static_resources:
                   cluster: local_service
           http_filters:
           - name: envoy.router
+          - name: envoy.health_check
+            pass_through_mode: true
+#            cache_time: 10s
+            headers:
+              - name: ":path"
+                exact_match: "/actuator/health"
   - address:
       socket_address:
         address: 0.0.0.0

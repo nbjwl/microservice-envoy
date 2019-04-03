@@ -15,7 +15,7 @@ services:
     image: envoyproxy/envoy-alpine:latest
     volumes:
     - ./demo/envoy.yml:/etc/envoy.yaml
-    command: envoy -c /etc/envoy.yaml --service-cluster demo-sidecar-proxy  --service-node demo-sidecar-proxy
+    command: envoy -c /etc/envoy.yaml --service-cluster demo-service  --service-node demo-service
     network_mode: "service:demo-service-consul"
     depends_on:
     - demo-service-consul
