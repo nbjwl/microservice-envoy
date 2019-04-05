@@ -1,0 +1,84 @@
+version: '3'
+services:
+
+  consul-server1:
+    image: consul:latest
+    volumes:
+    - ./consul/server.hcl:/consul/config/server.hcl
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -bootstrap-expect 3 -retry-join "consul-server1"
+    ports:
+    - 8500:8500
+
+  consul-server2:
+    image: consul:latest
+    volumes:
+    - ./consul/server.hcl:/consul/config/server.hcl
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -bootstrap-expect 3 -retry-join "consul-server1"
+
+  consul-server3:
+    image: consul:latest
+    volumes:
+    - ./consul/server.hcl:/consul/config/server.hcl
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -bootstrap-expect 3 -retry-join "consul-server1"
+
+  demo-service-consul:
+    image: consul:latest
+    volumes:
+    - ./consul/client/demo.hcl:/consul/config/demo.hcl
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -retry-join "consul-server1"
+    ports:
+    - 9002:8081
+    - 8002:21000
+    - 10002:8080
+
+
+  demo-service-envoy:
+    image: envoyproxy/envoy-alpine:v1.8.0
+    volumes:
+    - ./envoy.yml:/etc/envoy.yaml
+    command: envoy -c /etc/envoy.yaml --service-cluster demo-sidecar-proxy  --service-node demo-sidecar-proxy -l debug
+    network_mode: "service:demo-service-consul"
+    depends_on:
+    - demo-service-consul
+
+
+  demo-service:
+    image: maven:3.6.0-jdk-11
+    volumes:
+    - ../services:/etc/service
+    - ~/.m2:/root/.m2
+    command: mvn -f /etc/service/demo/pom.xml spring-boot:run
+    network_mode: "service:demo-service-consul"
+    depends_on:
+    - demo-service-consul
+
+  user-service-consul:
+    image: consul:latest
+    volumes:
+    - ./consul/client/user.hcl:/consul/config/user.hcl
+    command: consul agent -data-dir "consul/data" -config-dir "consul/config" -retry-join "consul-server1"
+    ports:
+    - 9001:8081
+    - 8001:21000
+    - 10001:8080
+
+
+  user-service-envoy:
+    image: envoyproxy/envoy-alpine:v1.8.0
+    volumes:
+    - ./envoy.yml:/etc/envoy.yaml
+    command: envoy -c /etc/envoy.yaml --service-cluster user-sidecar-proxy  --service-node user-sidecar-proxy -l debug
+    network_mode: "service:user-service-consul"
+    depends_on:
+    - user-service-consul
+
+
+  user-service:
+    image: maven:3.6.0-jdk-11
+    volumes:
+    - ../services:/etc/service
+    - ~/.m2:/root/.m2
+    command: mvn -f /etc/service/user/pom.xml spring-boot:run
+    network_mode: "service:user-service-consul"
+    depends_on:
+    - user-service-consul
