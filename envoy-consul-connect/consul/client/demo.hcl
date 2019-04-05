@@ -90,14 +90,28 @@ services {
                             "virtual_hosts": [
                               {
                                 "name": "backend",
-                                "domains": ["*"],
+                                "domains": ["user-service"],
                                 "routes": [
                                   {
                                     "match": {
                                       "prefix": "/"
                                     },
                                     "route": {
-                                      "cluster_header": "SERVICE"
+                                      "cluster": "service:user"
+                                    }
+                                  }
+                                ]
+                              },
+                              {
+                                "name": "backend",
+                                "domains": ["demo-service"],
+                                "routes": [
+                                  {
+                                    "match": {
+                                      "prefix": "/"
+                                    },
+                                    "route": {
+                                      "cluster": "service:demo"
                                     }
                                   }
                                 ]

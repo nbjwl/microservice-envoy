@@ -36,7 +36,7 @@ services:
     image: envoyproxy/envoy-alpine:v1.8.0
     volumes:
     - ./envoy.yml:/etc/envoy.yaml
-    command: envoy -c /etc/envoy.yaml --service-cluster demo-sidecar-proxy  --service-node demo-sidecar-proxy
+    command: envoy -c /etc/envoy.yaml --service-cluster demo-sidecar-proxy  --service-node demo-sidecar-proxy -l debug
     network_mode: "service:demo-service-consul"
     depends_on:
     - demo-service-consul
@@ -67,7 +67,7 @@ services:
     image: envoyproxy/envoy-alpine:v1.8.0
     volumes:
     - ./envoy.yml:/etc/envoy.yaml
-    command: envoy -c /etc/envoy.yaml --service-cluster user-sidecar-proxy  --service-node user-sidecar-proxy
+    command: envoy -c /etc/envoy.yaml --service-cluster user-sidecar-proxy  --service-node user-sidecar-proxy -l debug
     network_mode: "service:user-service-consul"
     depends_on:
     - user-service-consul
