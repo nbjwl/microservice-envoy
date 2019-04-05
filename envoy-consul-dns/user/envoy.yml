@@ -23,13 +23,15 @@ static_resources:
                 route:
                   cluster: local_service
           http_filters:
-          - name: envoy.router
           - name: envoy.health_check
-            pass_through_mode: true
-#            cache_time: 10s
-            headers:
+            config:
+              pass_through_mode: true
+              cache_time: 20s
+              headers:
               - name: ":path"
                 exact_match: "/actuator/health"
+          - name: envoy.router
+
   - address:
       socket_address:
         address: 0.0.0.0
@@ -68,12 +70,12 @@ static_resources:
               socket_address:
                 address: 127.0.0.1
                 port_value: 8080
-  - name: service:demo
+  - name: demo-service
     connect_timeout: 0.25s
     type: strict_dns
     lb_policy: round_robin
     load_assignment:
-      cluster_name: user_service
+      cluster_name: demo-service
       endpoints:
       - lb_endpoints:
         - endpoint:

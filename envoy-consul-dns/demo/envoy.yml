@@ -46,6 +46,9 @@ static_resources:
                   prefix: "/"
                 route:
                   cluster_header: SERVICE
+                  retry_policy:
+                    retry_on: 5xx
+                    per_try_timeout: 5s
           http_filters:
           - name: envoy.router
   clusters:
@@ -62,18 +65,24 @@ static_resources:
               socket_address:
                 address: 127.0.0.1
                 port_value: 8080
-  - name: service:user
+  - name: user-service
     connect_timeout: 0.25s
     type: strict_dns
     lb_policy: round_robin
     dns_resolvers:
-      address:
-        socket_address:
-          address: 127.0.0.1
-          port_value: 8600
-
+      socket_address:
+        address: 127.0.0.1
+        port_value: 8600
+    health_checks:
+      - timeout: 2s
+        interval: 10s
+        unhealthy_threshold: 2
+        healthy_threshold: 2
+        http_health_check:
+          path: "/actuator/health"
+          service_name: "user-service"
     load_assignment:
-      cluster_name: user_service
+      cluster_name: user-service
       endpoints:
       - lb_endpoints:
         - endpoint:

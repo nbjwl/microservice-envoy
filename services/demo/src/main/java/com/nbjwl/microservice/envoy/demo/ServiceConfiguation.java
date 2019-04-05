@@ -18,7 +18,7 @@ public class ServiceConfiguation
                 {
 
                     HttpHeaders headers = request.getHeaders();
-                    headers.set("SERVICE", "service:user");
+                    headers.set("SERVICE", "user-service");
                     return execution.execute(request, body);
                 }).build();
     }
