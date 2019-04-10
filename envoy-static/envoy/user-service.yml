@@ -45,7 +45,7 @@ static_resources:
               - match:
                   prefix: "/"
                 route:
-                  cluster: demo_service
+                  cluster: demo-service
           http_filters:
           - name: envoy.router
   clusters:
@@ -62,7 +62,7 @@ static_resources:
               socket_address:
                 address: 127.0.0.1
                 port_value: 8080
-  - name: demo_service
+  - name: demo-service
     connect_timeout: 0.25s
     type: strict_dns
     lb_policy: round_robin
